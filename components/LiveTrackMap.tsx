@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { routeToFeature } from "@/lib/geo/geojson";
@@ -15,19 +15,28 @@ interface LiveTrackMapProps {
 export default function LiveTrackMap({ points }: LiveTrackMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [unsupported, setUnsupported] = useState(() => !mapboxgl.supported());
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current || mapRef.current || unsupported) return;
 
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: points[0] ?? AMSTERDAM_CENTER,
-      zoom: 16,
-    });
+    let map: mapboxgl.Map;
+    try {
+      map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: points[0] ?? AMSTERDAM_CENTER,
+        zoom: 16,
+      });
+    } catch {
+      queueMicrotask(() => setUnsupported(true));
+      return;
+    }
     mapRef.current = map;
+
+    map.on("error", () => setUnsupported(true));
 
     map.on("load", () => {
       map.addSource("live-route", {
@@ -68,6 +77,14 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
       map.easeTo({ center: latest, duration: 500 });
     }
   }, [points]);
+
+  if (unsupported) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:bg-zinc-950">
+        Your browser doesn&apos;t support the map view (WebGL is required). You can still record — your route is being tracked.
+      </div>
+    );
+  }
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
