@@ -22,27 +22,63 @@ export function routesToFeatureCollection(
   };
 }
 
-const HEATMAP_SAMPLE_SPACING_M = 8;
+const SAMPLE_SPACING_M = 8;
+// Cell size for the overlap grid — coarser than the sample spacing so
+// points from the same street reliably land in the same cell even with
+// GPS/matching jitter, but fine enough to distinguish separate streets.
+const GRID_CELL_SIZE_M = 12;
+const METERS_PER_DEGREE_LAT = 111_320;
 
 /**
- * Densifies every route into evenly-spaced points along its line, for use
- * as input to Mapbox's `heatmap` layer type (which buckets point density,
- * not line overlap). Streets cleaned by multiple activities accumulate
- * more points in the same place, so the heatmap's color ramp reads that
- * as higher intensity without any per-segment tracking in the backend.
+ * Counts how many distinct activities actually cover each patch of street,
+ * and emits one point per (cell, activity) pair carrying that cell's total
+ * count. Mapbox's `heatmap` layer normalizes density relative to whatever
+ * is densest on screen, so a single lightly-cleaned route ends up looking
+ * just as "maxed out" as a heavily-cleaned one — there's no true zero.
+ * Emitting an explicit count lets the map color by an absolute scale
+ * instead: a street cleaned once is reliably dimmer than one cleaned five
+ * times, regardless of what else is on screen.
  */
-export function routesToHeatmapPoints(
-  activities: Pick<Activity, "route_points">[]
+export function routesToOverlapPoints(
+  activities: Pick<Activity, "id" | "route_points">[]
 ): FeatureCollection<Point> {
-  const features: Feature<Point>[] = [];
+  const cellActivityIds = new Map<string, Set<string>>();
+  const cellCoordinate = new Map<string, LngLat>();
 
   for (const activity of activities) {
-    for (const point of densifyLine(activity.route_points, HEATMAP_SAMPLE_SPACING_M)) {
-      features.push({ type: "Feature", geometry: { type: "Point", coordinates: point }, properties: {} });
+    const cellsTouched = new Set<string>();
+
+    for (const point of densifyLine(activity.route_points, SAMPLE_SPACING_M)) {
+      const key = cellKey(point);
+      cellsTouched.add(key);
+      if (!cellCoordinate.has(key)) cellCoordinate.set(key, point);
+    }
+
+    for (const key of cellsTouched) {
+      const ids = cellActivityIds.get(key) ?? new Set<string>();
+      ids.add(activity.id);
+      cellActivityIds.set(key, ids);
     }
   }
 
+  const features: Feature<Point>[] = [];
+  for (const [key, ids] of cellActivityIds) {
+    const coordinate = cellCoordinate.get(key)!;
+    features.push({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: coordinate },
+      properties: { count: ids.size },
+    });
+  }
+
   return { type: "FeatureCollection", features };
+}
+
+function cellKey([lng, lat]: LngLat): string {
+  const metersPerDegreeLng = METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180);
+  const col = Math.round((lng * metersPerDegreeLng) / GRID_CELL_SIZE_M);
+  const row = Math.round((lat * METERS_PER_DEGREE_LAT) / GRID_CELL_SIZE_M);
+  return `${col}:${row}`;
 }
 
 function densifyLine(points: LngLat[], spacingMeters: number): LngLat[] {

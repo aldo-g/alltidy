@@ -8,12 +8,25 @@ import { applyMonochromeStyle } from "@/lib/mapStyle";
 
 const AMSTERDAM_CENTER: [number, number] = [4.9041, 52.3676];
 
+// Absolute color scale by real overlap count — a street cleaned once
+// always reads as this dim red/orange, cleaned 4+ times always reads as
+// this vivid green, regardless of what else is on screen. Unlike Mapbox's
+// heatmap-density (which normalizes relative to the densest thing
+// currently visible), this scale never shifts.
+const INTENSITY_COLORS = {
+  1: "#c2410c",
+  2: "#d97706",
+  3: "#65a30d",
+  4: "#16a34a",
+  max: "#047857",
+} as const;
+
 interface MapProps {
   routes: FeatureCollection<LineString>;
-  heatPoints: FeatureCollection<Point>;
+  overlapPoints: FeatureCollection<Point>;
 }
 
-export default function Map({ routes, heatPoints }: MapProps) {
+export default function Map({ routes, overlapPoints }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [unsupported, setUnsupported] = useState(() => !mapboxgl.supported());
@@ -51,51 +64,58 @@ export default function Map({ routes, heatPoints }: MapProps) {
         data: routes,
       });
 
-      map.addSource("community-heat", {
+      map.addSource("community-overlap", {
         type: "geojson",
-        data: heatPoints,
+        data: overlapPoints,
       });
 
-      // Thin base line so every cleaned street is visible as a line even
-      // where cleanup density is too low for the heatmap to show much.
+      // Thin base line so a street cleaned only once is still clearly
+      // visible as a continuous line, colored to match a count of 1.
       map.addLayer({
         id: "community-routes-line",
         type: "line",
         source: "community-routes",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "#c2410c",
-          "line-width": 2,
-          "line-opacity": 0.5,
+          "line-color": INTENSITY_COLORS[1],
+          "line-width": 2.5,
+          "line-opacity": 0.6,
         },
       });
 
-      // Density heatmap over the same points — a street cleaned by many
-      // overlapping activities accumulates more points in the same place,
-      // which the color ramp reads as rising intensity: dim red/orange for
-      // light coverage, through amber, up to a vivid saturated green for
-      // the most-cleaned streets.
+      // Overlap-count circles laid over the line: each grid cell's color
+      // and size reflect the real number of distinct activities that
+      // covered it — an absolute scale, not relative density, so a single
+      // cleanup never gets mistaken for a heavily-cleaned street.
       map.addLayer({
-        id: "community-heat-layer",
-        type: "heatmap",
-        source: "community-heat",
+        id: "community-overlap-circles",
+        type: "circle",
+        source: "community-overlap",
         paint: {
-          "heatmap-weight": 1,
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 12, 1, 17, 3],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 12, 8, 17, 22],
-          "heatmap-opacity": 0.85,
-          "heatmap-color": [
+          "circle-radius": [
             "interpolate",
             ["linear"],
-            ["heatmap-density"],
-            0, "rgba(194, 65, 12, 0)",
-            0.15, "rgba(194, 65, 12, 0.65)",
-            0.35, "rgba(217, 119, 6, 0.75)",
-            0.55, "rgba(202, 138, 4, 0.8)",
-            0.72, "rgba(101, 163, 13, 0.85)",
-            0.86, "rgba(22, 163, 74, 0.9)",
-            1, "rgba(4, 120, 87, 0.95)",
+            ["zoom"],
+            12,
+            ["step", ["get", "count"], 3, 2, 4, 3, 5, 4, 6.5],
+            17,
+            ["step", ["get", "count"], 8, 2, 11, 3, 14, 4, 18],
           ],
+          "circle-color": [
+            "step",
+            ["get", "count"],
+            INTENSITY_COLORS[1],
+            2,
+            INTENSITY_COLORS[2],
+            3,
+            INTENSITY_COLORS[3],
+            4,
+            INTENSITY_COLORS[4],
+            5,
+            INTENSITY_COLORS.max,
+          ],
+          "circle-opacity": 0.9,
+          "circle-blur": 0.3,
         },
       });
     });
@@ -114,9 +134,9 @@ export default function Map({ routes, heatPoints }: MapProps) {
     const routesSource = map.getSource("community-routes") as mapboxgl.GeoJSONSource | undefined;
     routesSource?.setData(routes);
 
-    const heatSource = map.getSource("community-heat") as mapboxgl.GeoJSONSource | undefined;
-    heatSource?.setData(heatPoints);
-  }, [routes, heatPoints]);
+    const overlapSource = map.getSource("community-overlap") as mapboxgl.GeoJSONSource | undefined;
+    overlapSource?.setData(overlapPoints);
+  }, [routes, overlapPoints]);
 
   if (unsupported) {
     return (

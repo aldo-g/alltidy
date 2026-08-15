@@ -19,6 +19,10 @@ export async function POST(req: Request) {
   const routePoints = await snapToRoads(body.route_points);
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data, error } = await supabase
     .from("activities")
     .insert({
@@ -28,6 +32,7 @@ export async function POST(req: Request) {
       route_points: routePoints,
       distance_meters: totalRouteDistance(body.route_points),
       device_id: body.device_id,
+      user_id: user?.id ?? null,
       notes: body.notes ?? null,
     })
     .select()

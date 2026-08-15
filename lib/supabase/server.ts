@@ -10,8 +10,15 @@ export async function createClient() {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: () => {
-          // No-op: no auth session cookies to persist yet.
+        setAll: (cookiesToSet) => {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Called from a Server Component — proxy.ts refreshes the
+            // session cookie instead, so this can be safely ignored.
+          }
         },
       },
     }
