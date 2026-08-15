@@ -1,10 +1,10 @@
 import type mapboxgl from "mapbox-gl";
 
 /**
- * Strips color and clutter from the default Mapbox style so recorded
- * routes are the only saturated thing on the map. Runs after the style
- * has loaded, since it walks the live layer list rather than authoring
- * a custom Mapbox Studio style.
+ * Strips all text and color from the default Mapbox style so the road/path
+ * network and recorded routes are the only things visible. Runs after the
+ * style has loaded, since it walks the live layer list rather than
+ * authoring a custom Mapbox Studio style.
  */
 export function applyMonochromeStyle(map: mapboxgl.Map) {
   const style = map.getStyle();
@@ -13,13 +13,8 @@ export function applyMonochromeStyle(map: mapboxgl.Map) {
   for (const layer of style.layers) {
     const id = layer.id;
 
-    // Hide POI icons/labels, transit markers, and other visual clutter —
-    // keep only road and settlement (place-name) labels for orientation.
-    // Layer IDs verified against the live mapbox/light-v11 style spec.
-    if (
-      layer.type === "symbol" &&
-      !/road-label|street-label|settlement-.*-label|country-label/.test(id)
-    ) {
+    // No text anywhere — labels, POI icons, place names all hidden.
+    if (layer.type === "symbol") {
       map.setLayoutProperty(id, "visibility", "none");
       continue;
     }
@@ -36,17 +31,14 @@ export function applyMonochromeStyle(map: mapboxgl.Map) {
       }
     }
 
+    // Roads and paths are the secondary highlight beneath the recorded
+    // routes, so they get a darker, more visible gray than other layers.
     if (layer.type === "line" && /road|bridge|tunnel/.test(id)) {
-      map.setPaintProperty(id, "line-color", "#d4d4d8");
+      map.setPaintProperty(id, "line-color", "#a1a1aa");
     }
 
     if (layer.type === "background") {
       map.setPaintProperty(id, "background-color", "#f7f7f5");
-    }
-
-    if (layer.type === "symbol" && /label/.test(id)) {
-      map.setPaintProperty(id, "text-color", "#a1a1aa");
-      map.setPaintProperty(id, "text-halo-color", "#f7f7f5");
     }
   }
 }
