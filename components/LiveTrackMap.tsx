@@ -26,9 +26,10 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
     try {
       map = new mapboxgl.Map({
         container: containerRef.current,
-        style: "mapbox://styles/mapbox/streets-v12",
+        style: "mapbox://styles/mapbox/light-v11",
         center: points[0] ?? AMSTERDAM_CENTER,
         zoom: 16,
+        attributionControl: false,
       });
     } catch {
       queueMicrotask(() => setUnsupported(true));
@@ -38,10 +39,25 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
 
     map.on("error", () => setUnsupported(true));
 
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+
     map.on("load", () => {
       map.addSource("live-route", {
         type: "geojson",
         data: routeToFeature(points),
+      });
+
+      map.addLayer({
+        id: "live-route-glow",
+        type: "line",
+        source: "live-route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#2563eb",
+          "line-width": 12,
+          "line-opacity": 0.2,
+          "line-blur": 2,
+        },
       });
 
       map.addLayer({
@@ -51,7 +67,7 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": "#2563eb",
-          "line-width": 5,
+          "line-width": 4,
         },
       });
     });
@@ -80,7 +96,7 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
 
   if (unsupported) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:bg-zinc-950">
+      <div className="flex h-full w-full items-center justify-center bg-[var(--surface-muted)] p-6 text-center text-sm text-[var(--muted)]">
         Your browser doesn&apos;t support the map view (WebGL is required). You can still record — your route is being tracked.
       </div>
     );

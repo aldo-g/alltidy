@@ -25,7 +25,7 @@ export default function ActivityStats({ points, startedAt, isRecording }: Activi
     : 0;
 
   return (
-    <div className="flex gap-6 rounded-lg bg-white/90 px-4 py-3 shadow dark:bg-black/90">
+    <div className="flex gap-8 rounded-2xl border border-[var(--border)]/60 bg-[var(--surface)]/85 px-6 py-4 shadow-lg shadow-black/5 backdrop-blur-md">
       <Stat label="Duration" value={formatDuration(durationSeconds)} />
       <Stat label="Distance" value={formatDistance(distanceMeters)} />
     </div>
@@ -34,9 +34,11 @@ export default function ActivityStats({ points, startedAt, isRecording }: Activi
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col">
-      <span className="text-xs uppercase tracking-wide text-zinc-500">{label}</span>
-      <span className="text-lg font-semibold tabular-nums">{value}</span>
+    <div className="flex flex-col items-center">
+      <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
+        {label}
+      </span>
+      <span className="text-2xl font-semibold tabular-nums tracking-tight">{value}</span>
     </div>
   );
 }

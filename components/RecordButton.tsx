@@ -56,24 +56,29 @@ export default function RecordButton() {
     }
   }
 
-  if (status === "unsupported") {
-    return <StatusMessage>{errorMessage}</StatusMessage>;
-  }
-
-  if (status === "denied") {
-    return <StatusMessage>{errorMessage}</StatusMessage>;
+  if (status === "unsupported" || status === "denied") {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6">
+        <StatusMessage>{errorMessage}</StatusMessage>
+      </div>
+    );
   }
 
   if (status === "idle" || status === "requesting-permission") {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-[var(--surface-muted)] p-6">
         <button
           onClick={start}
           disabled={status === "requesting-permission"}
-          className="rounded-full bg-green-600 px-8 py-4 text-lg font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+          className="flex h-40 w-40 items-center justify-center rounded-full bg-[var(--accent)] text-lg font-semibold text-white shadow-xl shadow-emerald-900/25 transition-all hover:bg-[var(--accent-hover)] hover:scale-[1.03] disabled:scale-100 disabled:opacity-60"
         >
-          {status === "requesting-permission" ? "Requesting location…" : "Start Cleanup"}
+          {status === "requesting-permission" ? "Locating…" : "Start Cleanup"}
         </button>
+        <p className="text-sm text-[var(--muted)]">
+          {status === "requesting-permission"
+            ? "Waiting for location access…"
+            : "We'll track your route as you clean"}
+        </p>
         {errorMessage && <StatusMessage>{errorMessage}</StatusMessage>}
       </div>
     );
@@ -84,48 +89,53 @@ export default function RecordButton() {
       <div className="flex-1">
         <LiveTrackMap points={points} />
       </div>
-      <div className="absolute left-1/2 top-4 -translate-x-1/2">
+
+      <div className="pointer-events-none absolute inset-x-0 top-20 z-10 flex justify-center px-4">
         <ActivityStats points={points} startedAt={startedAt} isRecording={isRecording} />
       </div>
-      <div className="flex items-center justify-center gap-4 border-t border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-black">
-        {isRecording ? (
-          <button
-            onClick={stop}
-            className="rounded-full bg-red-600 px-8 py-3 text-lg font-semibold text-white hover:bg-red-700"
-          >
-            Stop
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={reset}
-              disabled={saving}
-              className="rounded-full border border-zinc-300 px-6 py-3 font-medium hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900"
-            >
-              Discard
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving || points.length < 2}
-              className="rounded-full bg-green-600 px-8 py-3 text-lg font-semibold text-white hover:bg-green-700 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save Cleanup"}
-            </button>
-          </>
+
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-3 p-6">
+        {saveError && (
+          <div className="w-full max-w-sm">
+            <StatusMessage>{saveError}</StatusMessage>
+          </div>
         )}
-      </div>
-      {saveError && (
-        <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
-          <StatusMessage>{saveError}</StatusMessage>
+        <div className="flex items-center gap-4 rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/85 p-2 shadow-xl shadow-black/10 backdrop-blur-md">
+          {isRecording ? (
+            <button
+              onClick={stop}
+              className="flex items-center gap-2 rounded-full bg-[var(--danger)] px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-[var(--danger-hover)]"
+            >
+              <span className="h-2.5 w-2.5 rounded-sm bg-white" />
+              Stop
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={reset}
+                disabled={saving}
+                className="rounded-full px-6 py-3.5 text-base font-medium text-[var(--muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] disabled:opacity-60"
+              >
+                Discard
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || points.length < 2}
+                className="rounded-full bg-[var(--accent)] px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-900/20 transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              >
+                {saving ? "Saving…" : "Save Cleanup"}
+              </button>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
 function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
-    <p className="max-w-sm rounded-lg bg-amber-50 px-4 py-3 text-center text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+    <p className="max-w-sm rounded-xl border border-[var(--border)]/60 bg-[var(--warn-bg)] px-4 py-3 text-center text-sm text-[var(--warn-fg)] shadow-lg shadow-black/5">
       {children}
     </p>
   );

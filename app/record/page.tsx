@@ -3,13 +3,17 @@ import RecordButton from "@/components/RecordButton";
 
 export default function RecordPage() {
   return (
-    <div className="flex h-screen w-screen flex-col">
-      <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-black">
-        <Link href="/" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
-          ← Back to map
+    <div className="relative flex h-screen w-screen flex-col bg-[var(--background)]">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-center p-4">
+        <Link
+          href="/"
+          className="pointer-events-auto absolute left-4 flex items-center gap-1.5 rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-medium text-[var(--muted)] shadow-lg shadow-black/5 backdrop-blur-md transition-colors hover:text-[var(--foreground)]"
+        >
+          ← Map
         </Link>
-        <h1 className="text-lg font-semibold">Record a cleanup</h1>
-        <span className="w-16" />
+        <h1 className="rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-semibold shadow-lg shadow-black/5 backdrop-blur-md">
+          Record a cleanup
+        </h1>
       </header>
       <RecordButton />
     </div>

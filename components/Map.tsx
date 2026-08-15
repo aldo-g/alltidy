@@ -25,9 +25,10 @@ export default function Map({ routes }: MapProps) {
     try {
       map = new mapboxgl.Map({
         container: containerRef.current,
-        style: "mapbox://styles/mapbox/streets-v12",
+        style: "mapbox://styles/mapbox/light-v11",
         center: AMSTERDAM_CENTER,
         zoom: 13,
+        attributionControl: false,
       });
     } catch {
       queueMicrotask(() => setUnsupported(true));
@@ -37,10 +38,27 @@ export default function Map({ routes }: MapProps) {
 
     map.on("error", () => setUnsupported(true));
 
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
+
     map.on("load", () => {
       map.addSource("community-routes", {
         type: "geojson",
         data: routes,
+      });
+
+      // Soft glow underlay so routes read clearly against the muted basemap.
+      map.addLayer({
+        id: "community-routes-glow",
+        type: "line",
+        source: "community-routes",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#10b981",
+          "line-width": 10,
+          "line-opacity": 0.18,
+          "line-blur": 2,
+        },
       });
 
       map.addLayer({
@@ -49,9 +67,9 @@ export default function Map({ routes }: MapProps) {
         source: "community-routes",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "#22c55e",
-          "line-width": 4,
-          "line-opacity": 0.85,
+          "line-color": "#059669",
+          "line-width": 3.5,
+          "line-opacity": 0.95,
         },
       });
     });
@@ -75,7 +93,7 @@ export default function Map({ routes }: MapProps) {
 
   if (unsupported) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:bg-zinc-950">
+      <div className="flex h-full w-full items-center justify-center bg-[var(--surface-muted)] p-6 text-center text-sm text-[var(--muted)]">
         Your browser doesn&apos;t support the map view (WebGL is required).
       </div>
     );
