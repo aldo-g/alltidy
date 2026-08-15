@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { FeatureCollection, LineString } from "geojson";
+import { applyMonochromeStyle } from "@/lib/mapStyle";
 
 const AMSTERDAM_CENTER: [number, number] = [4.9041, 52.3676];
 
@@ -42,6 +43,8 @@ export default function Map({ routes }: MapProps) {
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
 
     map.on("load", () => {
+      applyMonochromeStyle(map);
+
       map.addSource("community-routes", {
         type: "geojson",
         data: routes,
@@ -55,9 +58,9 @@ export default function Map({ routes }: MapProps) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": "#10b981",
-          "line-width": 10,
-          "line-opacity": 0.18,
-          "line-blur": 2,
+          "line-width": 14,
+          "line-opacity": 0.25,
+          "line-blur": 3,
         },
       });
 
@@ -68,8 +71,8 @@ export default function Map({ routes }: MapProps) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": "#059669",
-          "line-width": 3.5,
-          "line-opacity": 0.95,
+          "line-width": 4.5,
+          "line-opacity": 1,
         },
       });
     });

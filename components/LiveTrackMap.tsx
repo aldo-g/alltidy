@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { routeToFeature } from "@/lib/geo/geojson";
+import { applyMonochromeStyle } from "@/lib/mapStyle";
 import type { LngLat } from "@/lib/types";
 
 const AMSTERDAM_CENTER: [number, number] = [4.9041, 52.3676];
@@ -42,6 +43,8 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
     map.on("load", () => {
+      applyMonochromeStyle(map);
+
       map.addSource("live-route", {
         type: "geojson",
         data: routeToFeature(points),
@@ -54,9 +57,9 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": "#2563eb",
-          "line-width": 12,
-          "line-opacity": 0.2,
-          "line-blur": 2,
+          "line-width": 14,
+          "line-opacity": 0.25,
+          "line-blur": 3,
         },
       });
 
@@ -67,7 +70,7 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": "#2563eb",
-          "line-width": 4,
+          "line-width": 5,
         },
       });
     });
