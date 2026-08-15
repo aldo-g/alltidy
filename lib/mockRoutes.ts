@@ -3,7 +3,10 @@ import type { LngLat } from "@/lib/types";
 // Sample routes near Amsterdam Centrum, used when Supabase has no data yet
 // (e.g. local dev before the DB is seeded). Generated via the Mapbox
 // Directions API so they follow real streets, matching the road-snapped
-// shape that real recorded activities get at save time.
+// shape that real recorded activities get at save time. mock-1, mock-1b,
+// and mock-1c deliberately share street segments so the community map's
+// overlap-intensity effect (more cleanups = brighter line) is visible
+// without needing real data.
 export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
   {
     id: "mock-1",
@@ -15,6 +18,31 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
       [4.899111, 52.372922],
       [4.899655, 52.372813],
       [4.8997, 52.372916],
+    ],
+  },
+  {
+    id: "mock-1b",
+    route_points: [
+      [4.893007, 52.368891],
+      [4.894594, 52.368897],
+      [4.894609, 52.369091],
+      [4.894723, 52.369133],
+      [4.894907, 52.369132],
+      [4.894961, 52.369239],
+      [4.896982, 52.371463],
+      [4.898701, 52.37306],
+      [4.899111, 52.372922],
+      [4.899655, 52.372813],
+      [4.8997, 52.372916],
+    ],
+  },
+  {
+    id: "mock-1c",
+    route_points: [
+      [4.895459, 52.370118],
+      [4.896783, 52.371533],
+      [4.900072, 52.374533],
+      [4.901915, 52.373923],
     ],
   },
   {

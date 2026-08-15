@@ -50,29 +50,47 @@ export default function Map({ routes }: MapProps) {
         data: routes,
       });
 
-      // Soft glow underlay so routes read clearly against the muted basemap.
+      // Wide, low-opacity outer glow — mostly invisible on a single pass,
+      // but builds into a real halo where several cleanups overlap.
       map.addLayer({
-        id: "community-routes-glow",
+        id: "community-routes-glow-outer",
         type: "line",
         source: "community-routes",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "#10b981",
-          "line-width": 14,
-          "line-opacity": 0.25,
-          "line-blur": 3,
+          "line-color": "#00e08f",
+          "line-width": 20,
+          "line-opacity": 0.12,
+          "line-blur": 4,
         },
       });
 
+      // Tighter glow, same overlap-accumulation idea at a smaller radius.
+      map.addLayer({
+        id: "community-routes-glow-inner",
+        type: "line",
+        source: "community-routes",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#00c37a",
+          "line-width": 9,
+          "line-opacity": 0.35,
+          "line-blur": 1.5,
+        },
+      });
+
+      // Core line: translucent, so a single cleanup reads clearly but
+      // streets cleaned repeatedly stack into a visibly brighter, more
+      // saturated line as multiple routes overlap the same segment.
       map.addLayer({
         id: "community-routes-line",
         type: "line",
         source: "community-routes",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "#059669",
-          "line-width": 4.5,
-          "line-opacity": 1,
+          "line-color": "#047857",
+          "line-width": 3.5,
+          "line-opacity": 0.55,
         },
       });
     });
