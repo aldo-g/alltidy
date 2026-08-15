@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { totalRouteDistance } from "@/lib/geo/distance";
+import { snapToRoads } from "@/lib/geo/mapMatching";
 import type { NewActivity } from "@/lib/types";
 
 export async function POST(req: Request) {
@@ -12,6 +13,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid duration." }, { status: 400 });
   }
 
+  // Snap once at save time so every future map render is already
+  // road-accurate — distance is computed from the original GPS points,
+  // since the snapped path can be a different length than what was walked.
+  const routePoints = await snapToRoads(body.route_points);
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("activities")
@@ -19,7 +25,7 @@ export async function POST(req: Request) {
       started_at: body.started_at,
       ended_at: body.ended_at,
       duration_seconds: body.duration_seconds,
-      route_points: body.route_points,
+      route_points: routePoints,
       distance_meters: totalRouteDistance(body.route_points),
       device_id: body.device_id,
       notes: body.notes ?? null,
