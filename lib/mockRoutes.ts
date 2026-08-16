@@ -1,58 +1,24 @@
 import type { LngLat } from "@/lib/types";
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const daysAgo = (n: number) => new Date(Date.now() - n * DAY_MS).toISOString();
+
 // Sample routes across several Amsterdam neighborhoods, used when Supabase
 // has no data yet (e.g. local dev before the DB is seeded). Generated via
 // the Mapbox Directions API so they follow real streets, matching the
 // road-snapped shape that real recorded activities get at save time.
 //
-// Overlap is deliberate and spans the full intensity range: De Pijp has
-// five routes sharing one stretch (max color tier), Centrum's Red Light
-// District area has three, and the rest are single-pass routes (dim
-// red/orange) — so every tier of the overlap-count color scale is visible
-// without needing real data.
-export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
-  // Centrum / Red Light District — 3-way overlap
-  {
-    id: "mock-centrum-1",
-    route_points: [
-      [4.895459, 52.370118],
-      [4.896783, 52.371533],
-      [4.896982, 52.371463],
-      [4.898701, 52.37306],
-      [4.899111, 52.372922],
-      [4.899655, 52.372813],
-      [4.8997, 52.372916],
-    ],
-  },
-  {
-    id: "mock-centrum-2",
-    route_points: [
-      [4.893007, 52.368891],
-      [4.894594, 52.368897],
-      [4.894609, 52.369091],
-      [4.894723, 52.369133],
-      [4.894907, 52.369132],
-      [4.894961, 52.369239],
-      [4.896982, 52.371463],
-      [4.898701, 52.37306],
-      [4.899111, 52.372922],
-      [4.899655, 52.372813],
-      [4.8997, 52.372916],
-    ],
-  },
-  {
-    id: "mock-centrum-3",
-    route_points: [
-      [4.895459, 52.370118],
-      [4.896783, 52.371533],
-      [4.900072, 52.374533],
-      [4.901915, 52.373923],
-    ],
-  },
-
-  // De Pijp — 4-way overlap, the densest spot on the map
+// created_at is staggered to exercise the freshness fade end to end:
+// mock-depijp-1 (0 days) is vivid green; the De Pijp routes it overlaps
+// with are all older, showing "most recent cleanup wins" — the shared
+// stretch should read as freshly green, not faded, because of today's
+// pass. Centrum and Jordaan sit mid-fade, and Oost/West/Noord are past
+// the 7-day window, fully faded back to the base color.
+export const MOCK_ROUTES: { id: string; route_points: LngLat[]; created_at: string }[] = [
+  // De Pijp — cleaned again today, overlapping older passes underneath
   {
     id: "mock-depijp-1",
+    created_at: daysAgo(0),
     route_points: [
       [4.892607, 52.355385],
       [4.895995, 52.356115],
@@ -70,6 +36,7 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
   },
   {
     id: "mock-depijp-2",
+    created_at: daysAgo(9),
     route_points: [
       [4.892015, 52.356101],
       [4.892546, 52.356071],
@@ -92,6 +59,7 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
   },
   {
     id: "mock-depijp-3",
+    created_at: daysAgo(20),
     route_points: [
       [4.893021, 52.356652],
       [4.895046, 52.356547],
@@ -108,40 +76,43 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
       [4.897317, 52.359],
     ],
   },
+
+  // Centrum / Red Light District — cleaned a couple of days ago, mid-fade
   {
-    id: "mock-depijp-4",
+    id: "mock-centrum-1",
+    created_at: daysAgo(2),
     route_points: [
-      [4.894521, 52.357144],
-      [4.89682, 52.357017],
-      [4.897028, 52.356921],
-      [4.898455, 52.357344],
-      [4.898498, 52.357386],
-      [4.898459, 52.357548],
-      [4.899396, 52.35775],
-      [4.899445, 52.357953],
-      [4.899299, 52.358303],
+      [4.895459, 52.370118],
+      [4.896783, 52.371533],
+      [4.896982, 52.371463],
+      [4.898701, 52.37306],
+      [4.899111, 52.372922],
+      [4.899655, 52.372813],
+      [4.8997, 52.372916],
     ],
   },
   {
-    id: "mock-depijp-5",
+    id: "mock-centrum-2",
+    created_at: daysAgo(3),
     route_points: [
-      [4.893456, 52.357203],
-      [4.89682, 52.357017],
-      [4.897028, 52.356921],
-      [4.898455, 52.357344],
-      [4.898498, 52.357386],
-      [4.898459, 52.357548],
-      [4.899396, 52.35775],
-      [4.899445, 52.357953],
-      [4.899314, 52.358192],
-      [4.899231, 52.358641],
-      [4.89898, 52.359197],
+      [4.893007, 52.368891],
+      [4.894594, 52.368897],
+      [4.894609, 52.369091],
+      [4.894723, 52.369133],
+      [4.894907, 52.369132],
+      [4.894961, 52.369239],
+      [4.896982, 52.371463],
+      [4.898701, 52.37306],
+      [4.899111, 52.372922],
+      [4.899655, 52.372813],
+      [4.8997, 52.372916],
     ],
   },
 
-  // Jordaan — single-pass routes, no overlap (dim red/orange)
+  // Jordaan — cleaned 5 days ago, further into the fade
   {
     id: "mock-jordaan-1",
+    created_at: daysAgo(5),
     route_points: [
       [4.879403, 52.374495],
       [4.879207, 52.37445],
@@ -153,6 +124,7 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
   },
   {
     id: "mock-jordaan-2",
+    created_at: daysAgo(6),
     route_points: [
       [4.879943, 52.375094],
       [4.88272, 52.375711],
@@ -163,9 +135,11 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
     ],
   },
 
-  // Oost — single-pass
+  // Oost, West, Noord — cleaned well over a week ago, fully faded to the
+  // base "needs cleaning again" color
   {
     id: "mock-oost-1",
+    created_at: daysAgo(14),
     route_points: [
       [4.924544, 52.360519],
       [4.923675, 52.361046],
@@ -180,10 +154,9 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
       [4.930543, 52.365079],
     ],
   },
-
-  // West / Westerpark — single-pass
   {
     id: "mock-west-1",
+    created_at: daysAgo(18),
     route_points: [
       [4.872323, 52.386876],
       [4.872358, 52.386909],
@@ -201,10 +174,9 @@ export const MOCK_ROUTES: { id: string; route_points: LngLat[] }[] = [
       [4.878963, 52.389989],
     ],
   },
-
-  // Noord — single-pass
   {
     id: "mock-noord-1",
+    created_at: daysAgo(25),
     route_points: [
       [4.900936, 52.385108],
       [4.903273, 52.385613],

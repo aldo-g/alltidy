@@ -8,25 +8,19 @@ import { applyMonochromeStyle } from "@/lib/mapStyle";
 
 const AMSTERDAM_CENTER: [number, number] = [4.9041, 52.3676];
 
-// Absolute color scale by real overlap count — a street cleaned once
-// always reads as this dim red/orange, cleaned 4+ times always reads as
-// this vivid green, regardless of what else is on screen. Unlike Mapbox's
-// heatmap-density (which normalizes relative to the densest thing
-// currently visible), this scale never shifts.
-const INTENSITY_COLORS = {
-  1: "#c2410c",
-  2: "#d97706",
-  3: "#65a30d",
-  4: "#16a34a",
-  max: "#047857",
-} as const;
+// Freshness fade window — a spot cleaned today reads as vivid green and
+// fades smoothly back toward the uncleaned baseline color over this many
+// days if it isn't cleaned again.
+const FADE_DAYS = 7;
+const FRESH_COLOR = "#059669";
+const BASE_COLOR = "#c2410c";
 
 interface MapProps {
   routes: FeatureCollection<LineString>;
-  overlapPoints: FeatureCollection<Point>;
+  freshnessPoints: FeatureCollection<Point>;
 }
 
-export default function Map({ routes, overlapPoints }: MapProps) {
+export default function Map({ routes, freshnessPoints }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [unsupported, setUnsupported] = useState(() => !mapboxgl.supported());
@@ -64,57 +58,50 @@ export default function Map({ routes, overlapPoints }: MapProps) {
         data: routes,
       });
 
-      map.addSource("community-overlap", {
+      map.addSource("community-freshness", {
         type: "geojson",
-        data: overlapPoints,
+        data: freshnessPoints,
       });
 
-      // Thin base line so a street cleaned only once is still clearly
-      // visible as a continuous line, colored to match a count of 1.
+      // Thin base line so every cleaned street is visible as a continuous
+      // line even once its freshness has fully faded.
       map.addLayer({
         id: "community-routes-line",
         type: "line",
         source: "community-routes",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": INTENSITY_COLORS[1],
+          "line-color": BASE_COLOR,
           "line-width": 2.5,
-          "line-opacity": 0.6,
+          "line-opacity": 0.5,
         },
       });
 
-      // Overlap-count circles laid over the line: each grid cell's color
-      // and size reflect the real number of distinct activities that
-      // covered it — an absolute scale, not relative density, so a single
-      // cleanup never gets mistaken for a heavily-cleaned street.
+      // Freshness circles laid over the line: color fades from vivid
+      // green (cleaned today) back to the base color over FADE_DAYS days.
+      // Each cell holds the most recent cleanup that covered it, so a
+      // street re-cleaned today looks freshly green even if it was also
+      // cleaned weeks ago.
       map.addLayer({
-        id: "community-overlap-circles",
+        id: "community-freshness-circles",
         type: "circle",
-        source: "community-overlap",
+        source: "community-freshness",
         paint: {
-          "circle-radius": [
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 10],
+          "circle-color": [
             "interpolate",
             ["linear"],
-            ["zoom"],
-            12,
-            ["step", ["get", "count"], 3, 2, 4, 3, 5, 4, 6.5],
-            17,
-            ["step", ["get", "count"], 8, 2, 11, 3, 14, 4, 18],
+            ["get", "daysAgo"],
+            0, FRESH_COLOR,
+            FADE_DAYS, BASE_COLOR,
           ],
-          "circle-color": [
-            "step",
-            ["get", "count"],
-            INTENSITY_COLORS[1],
-            2,
-            INTENSITY_COLORS[2],
-            3,
-            INTENSITY_COLORS[3],
-            4,
-            INTENSITY_COLORS[4],
-            5,
-            INTENSITY_COLORS.max,
+          "circle-opacity": [
+            "interpolate",
+            ["linear"],
+            ["get", "daysAgo"],
+            0, 0.95,
+            FADE_DAYS, 0.5,
           ],
-          "circle-opacity": 0.9,
           "circle-blur": 0.3,
         },
       });
@@ -134,9 +121,11 @@ export default function Map({ routes, overlapPoints }: MapProps) {
     const routesSource = map.getSource("community-routes") as mapboxgl.GeoJSONSource | undefined;
     routesSource?.setData(routes);
 
-    const overlapSource = map.getSource("community-overlap") as mapboxgl.GeoJSONSource | undefined;
-    overlapSource?.setData(overlapPoints);
-  }, [routes, overlapPoints]);
+    const freshnessSource = map.getSource("community-freshness") as
+      | mapboxgl.GeoJSONSource
+      | undefined;
+    freshnessSource?.setData(freshnessPoints);
+  }, [routes, freshnessPoints]);
 
   if (unsupported) {
     return (

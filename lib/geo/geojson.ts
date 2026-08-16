@@ -23,51 +23,48 @@ export function routesToFeatureCollection(
 }
 
 const SAMPLE_SPACING_M = 8;
-// Cell size for the overlap grid — coarser than the sample spacing so
+// Cell size for the freshness grid — coarser than the sample spacing so
 // points from the same street reliably land in the same cell even with
 // GPS/matching jitter, but fine enough to distinguish separate streets.
 const GRID_CELL_SIZE_M = 12;
 const METERS_PER_DEGREE_LAT = 111_320;
 
 /**
- * Counts how many distinct activities actually cover each patch of street,
- * and emits one point per (cell, activity) pair carrying that cell's total
- * count. Mapbox's `heatmap` layer normalizes density relative to whatever
- * is densest on screen, so a single lightly-cleaned route ends up looking
- * just as "maxed out" as a heavily-cleaned one — there's no true zero.
- * Emitting an explicit count lets the map color by an absolute scale
- * instead: a street cleaned once is reliably dimmer than one cleaned five
- * times, regardless of what else is on screen.
+ * For each patch of street, finds the most recent cleanup that covered it
+ * and emits a point carrying "days since that cleanup" — freshly-cleaned
+ * spots read as 0 (vivid green), fading back toward the uncleaned baseline
+ * as the days climb. Older cleanups on the same spot don't matter once a
+ * newer one exists: the map always shows how recently a street was
+ * cleaned, not how many times it's been cleaned historically.
  */
-export function routesToOverlapPoints(
-  activities: Pick<Activity, "id" | "route_points">[]
+export function routesToFreshnessPoints(
+  activities: Pick<Activity, "route_points" | "created_at">[],
+  now: number = Date.now()
 ): FeatureCollection<Point> {
-  const cellActivityIds = new Map<string, Set<string>>();
+  const cellMostRecentMs = new Map<string, number>();
   const cellCoordinate = new Map<string, LngLat>();
 
   for (const activity of activities) {
-    const cellsTouched = new Set<string>();
+    const activityMs = new Date(activity.created_at).getTime();
 
     for (const point of densifyLine(activity.route_points, SAMPLE_SPACING_M)) {
       const key = cellKey(point);
-      cellsTouched.add(key);
-      if (!cellCoordinate.has(key)) cellCoordinate.set(key, point);
-    }
-
-    for (const key of cellsTouched) {
-      const ids = cellActivityIds.get(key) ?? new Set<string>();
-      ids.add(activity.id);
-      cellActivityIds.set(key, ids);
+      const existing = cellMostRecentMs.get(key);
+      if (existing === undefined || activityMs > existing) {
+        cellMostRecentMs.set(key, activityMs);
+        cellCoordinate.set(key, point);
+      }
     }
   }
 
   const features: Feature<Point>[] = [];
-  for (const [key, ids] of cellActivityIds) {
+  for (const [key, mostRecentMs] of cellMostRecentMs) {
     const coordinate = cellCoordinate.get(key)!;
+    const daysAgo = Math.max(0, (now - mostRecentMs) / (24 * 60 * 60 * 1000));
     features.push({
       type: "Feature",
       geometry: { type: "Point", coordinates: coordinate },
-      properties: { count: ids.size },
+      properties: { daysAgo },
     });
   }
 
