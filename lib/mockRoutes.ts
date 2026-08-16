@@ -1,5 +1,6 @@
 import type { LngLat } from "@/lib/types";
 import seedRoutes from "@/lib/mockSeedRoutes.json";
+import waterFlaggedIds from "@/lib/mockWaterFlaggedIds.json";
 import { haversineDistance } from "@/lib/geo/distance";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -16,7 +17,17 @@ const daysAgo = (n: number) => new Date(Date.now() - n * DAY_MS).toISOString();
 // into the same freshness grid cells (see routesToFreshnessPoints) and
 // don't add visual coverage, they just inflate the point count the map has
 // to render.
-const SEED_ROUTES = seedRoutes as { id: string; points: LngLat[] }[];
+// A handful of seed routes touch a canal, the IJ, or another water body at
+// some point along their real Directions API geometry — Amsterdam is laced
+// with waterways, so a walking route near a quay or bridge can legitimately
+// sample a point right at the water's edge. Verified against Mapbox's real
+// water/waterway tile layer (see scratchpad/check-water.mjs, not a distance
+// heuristic) and excluded so nothing draws across open water on the map.
+const WATER_FLAGGED_IDS = new Set(waterFlaggedIds as string[]);
+
+const SEED_ROUTES = (seedRoutes as { id: string; points: LngLat[] }[]).filter(
+  (seed) => !WATER_FLAGGED_IDS.has(seed.id)
+);
 
 // How many separate "cleanup pass" segments to carve out of each seed
 // street. Each segment is a contiguous slice of the real route (so it still
