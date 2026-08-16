@@ -38,16 +38,16 @@ export default async function Home() {
       <Map routes={routeCollection} freshnessPoints={freshnessPoints} />
 
       <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4">
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 py-2 pl-3 pr-4 shadow-lg shadow-black/5 backdrop-blur-md">
+        <div className="glass-panel pointer-events-auto flex items-center gap-2.5 rounded-full py-2 pl-3 pr-4">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-white">
             A
           </span>
-          <h1 className="text-[15px] font-semibold tracking-tight">AllTidy</h1>
+          <h1 className="font-display text-[16px] font-semibold tracking-tight">AllTidy</h1>
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           <Link
             href="/record"
-            className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition-colors hover:bg-[var(--accent-hover)]"
+            className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/25 transition-all hover:bg-[var(--accent-hover)] hover:shadow-[var(--accent)]/35 active:scale-[0.97]"
           >
             Start a cleanup
           </Link>
@@ -58,10 +58,13 @@ export default async function Home() {
       {user && <PersonalStats personalMeters={personalMeters} communityMeters={communityMeters} />}
 
       {weeklyMeters > 0 && (
-        <div className="pointer-events-none absolute bottom-24 right-4 z-10">
-          <div className="pointer-events-auto rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-medium shadow-lg shadow-black/5 backdrop-blur-md">
-            <span className="tabular-nums">{formatDistance(weeklyMeters)}</span> of streets
-            cleaned this week
+        <div className="pointer-events-none absolute bottom-4 right-4 z-10">
+          <div className="glass-panel pointer-events-auto flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+            <span className="font-display tabular-nums font-semibold">
+              {formatDistance(weeklyMeters)}
+            </span>
+            <span className="text-[var(--muted)]">cleaned this week</span>
           </div>
         </div>
       )}

@@ -49,7 +49,7 @@ export default function AuthButton() {
   }
 
   if (loading) {
-    return <div className="h-9 w-9 rounded-full bg-[var(--surface-muted)]" />;
+    return <div className="h-9 w-9 animate-pulse rounded-full bg-[var(--surface-muted)]" />;
   }
 
   if (user) {
@@ -60,13 +60,15 @@ export default function AuthButton() {
       <button
         onClick={handleSignOut}
         title={`Signed in as ${label} — click to sign out`}
-        className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[var(--border)]/60 bg-[var(--surface)] shadow-lg shadow-black/5 transition-opacity hover:opacity-80"
+        className="glass-panel flex h-9 w-9 items-center justify-center overflow-hidden rounded-full transition-transform hover:scale-105 active:scale-95"
       >
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="text-xs font-semibold">{label.charAt(0).toUpperCase()}</span>
+          <span className="font-display text-xs font-semibold">
+            {label.charAt(0).toUpperCase()}
+          </span>
         )}
       </button>
     );
@@ -75,7 +77,7 @@ export default function AuthButton() {
   return (
     <button
       onClick={handleSignIn}
-      className="rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-medium shadow-lg shadow-black/5 backdrop-blur-md transition-colors hover:bg-[var(--surface-muted)]"
+      className="glass-panel rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-muted)]"
     >
       Sign in
     </button>

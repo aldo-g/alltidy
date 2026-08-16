@@ -7,11 +7,11 @@ export default function RecordPage() {
       <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-center p-4">
         <Link
           href="/"
-          className="pointer-events-auto absolute left-4 flex items-center gap-1.5 rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-medium text-[var(--muted)] shadow-lg shadow-black/5 backdrop-blur-md transition-colors hover:text-[var(--foreground)]"
+          className="glass-panel pointer-events-auto absolute left-4 flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
         >
           ← Map
         </Link>
-        <h1 className="rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-semibold shadow-lg shadow-black/5 backdrop-blur-md">
+        <h1 className="glass-panel font-display rounded-full px-4 py-2 text-sm font-semibold">
           Record a cleanup
         </h1>
       </header>

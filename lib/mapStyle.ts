@@ -21,13 +21,13 @@ export function applyMonochromeStyle(map: mapboxgl.Map) {
 
     if (layer.type === "fill") {
       if (/water/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#e0e0e3");
+        map.setPaintProperty(id, "fill-color", "#dce3dc");
       } else if (/building/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#eeeeee");
+        map.setPaintProperty(id, "fill-color", "#ece8dc");
       } else if (/landuse|land|park|park-national/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#f4f4f2");
+        map.setPaintProperty(id, "fill-color", "#f0ecdf");
       } else if (/background/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#f9f9f7");
+        map.setPaintProperty(id, "fill-color", "#f6f4ee");
       }
     }
 
@@ -36,11 +36,11 @@ export function applyMonochromeStyle(map: mapboxgl.Map) {
     // but with enough separation from the route green that cleanups
     // still read as the dominant color on the map.
     if (layer.type === "line" && /road|bridge|tunnel/.test(id)) {
-      map.setPaintProperty(id, "line-color", "#93939c");
+      map.setPaintProperty(id, "line-color", "#a39d87");
     }
 
     if (layer.type === "background") {
-      map.setPaintProperty(id, "background-color", "#f9f9f7");
+      map.setPaintProperty(id, "background-color", "#f6f4ee");
     }
   }
 }

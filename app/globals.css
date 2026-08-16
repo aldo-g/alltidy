@@ -1,23 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf9;
-  --foreground: #18181b;
-  --surface: #ffffff;
-  --surface-muted: #f4f4f5;
-  --border: #e4e4e7;
-  --muted: #71717a;
+  --background: #f6f4ee;
+  --foreground: #201d17;
+  --surface: #fffdf9;
+  --surface-muted: #eeeadf;
+  --border: #e2ddcd;
+  --muted: #78715f;
 
-  --accent: #059669;
-  --accent-hover: #047857;
-  --accent-soft: #d1fae5;
-  --accent-line: #10b981;
+  --accent: #2f6d4f;
+  --accent-hover: #24573f;
+  --accent-soft: #dfeee2;
+  --accent-line: #3f8a63;
 
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
+  --danger: #c2410c;
+  --danger-hover: #9a3412;
 
-  --warn-bg: #fffbeb;
+  --warn-bg: #fdf3e3;
   --warn-fg: #92400e;
+
+  --shadow-color: 32 26% 16%;
 }
 
 @theme inline {
@@ -34,24 +36,27 @@
   --color-danger-hover: var(--danger-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --surface: #18181b;
-    --surface-muted: #27272a;
-    --border: #27272a;
-    --muted: #a1a1aa;
+    --background: #16150f;
+    --foreground: #f3f0e7;
+    --surface: #211f17;
+    --surface-muted: #2b291e;
+    --border: #38351f;
+    --muted: #a39d87;
 
-    --accent: #10b981;
-    --accent-hover: #34d399;
-    --accent-soft: #064e3b;
-    --accent-line: #34d399;
+    --accent: #4fa377;
+    --accent-hover: #6bb98f;
+    --accent-soft: #1e3b2b;
+    --accent-line: #6bb98f;
 
-    --warn-bg: #451a03;
-    --warn-fg: #fcd34d;
+    --warn-bg: #3a2a12;
+    --warn-fg: #f0c674;
+
+    --shadow-color: 0 0% 0%;
   }
 }
 
@@ -60,4 +65,19 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-geist-sans), ui-sans-serif, sans-serif;
+}
+
+.glass-panel {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  box-shadow:
+    0 1px 2px hsl(var(--shadow-color) / 0.06),
+    0 8px 24px -8px hsl(var(--shadow-color) / 0.18),
+    0 20px 48px -16px hsl(var(--shadow-color) / 0.14);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
 }
