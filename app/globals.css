@@ -1,23 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf9;
-  --foreground: #18181b;
-  --surface: #ffffff;
-  --surface-muted: #f4f4f5;
-  --border: #e4e4e7;
-  --muted: #71717a;
+  /* Warm ink/moss palette: parchment surfaces, ink text, moss-green accent. */
+  --background: #f6f2ea;
+  --foreground: #2a2521;
+  --surface: #fffdf9;
+  --surface-muted: #efe8db;
+  --border: #e2d8c4;
+  --muted: #7d7568;
 
-  --accent: #059669;
-  --accent-hover: #047857;
-  --accent-soft: #d1fae5;
-  --accent-line: #10b981;
+  --accent: #4d6b4f;
+  --accent-hover: #3d5640;
+  --accent-soft: #dce6d5;
+  --accent-line: #5c7f5c;
 
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
+  --danger: #b8452f;
+  --danger-hover: #9a3924;
 
-  --warn-bg: #fffbeb;
-  --warn-fg: #92400e;
+  --warn-bg: #fbeed7;
+  --warn-fg: #8a5a20;
+
+  /* Map coloring: amber (uncleaned baseline) fading to moss (freshly cleaned). */
+  --map-fresh: #4d6b4f;
+  --map-base: #c17f2e;
 }
 
 @theme inline {
@@ -32,32 +37,36 @@
   --color-accent-soft: var(--accent-soft);
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-fraunces);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --surface: #18181b;
-    --surface-muted: #27272a;
-    --border: #27272a;
-    --muted: #a1a1aa;
+    --background: #211d19;
+    --foreground: #f2ece0;
+    --surface: #2b2521;
+    --surface-muted: #3a332c;
+    --border: #473e33;
+    --muted: #a89d8c;
 
-    --accent: #10b981;
-    --accent-hover: #34d399;
-    --accent-soft: #064e3b;
-    --accent-line: #34d399;
+    --accent: #7fa47d;
+    --accent-hover: #96b894;
+    --accent-soft: #2f3d2c;
+    --accent-line: #7fa47d;
 
-    --warn-bg: #451a03;
-    --warn-fg: #fcd34d;
+    --warn-bg: #3a2a13;
+    --warn-fg: #e7b972;
+
+    --map-fresh: #7fa47d;
+    --map-base: #c98f42;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }

@@ -8,12 +8,12 @@ import { applyMonochromeStyle } from "@/lib/mapStyle";
 
 const AMSTERDAM_CENTER: [number, number] = [4.9041, 52.3676];
 
-// Freshness fade window — a spot cleaned today reads as vivid green and
-// fades smoothly back toward the uncleaned baseline color over this many
-// days if it isn't cleaned again.
+// Freshness fade window — a spot cleaned today reads as vivid moss green
+// and fades smoothly back toward the amber uncleaned baseline over this
+// many days if it isn't cleaned again.
 const FADE_DAYS = 7;
-const FRESH_COLOR = "#059669";
-const BASE_COLOR = "#c2410c";
+const FRESH_COLOR = "#4d6b4f";
+const BASE_COLOR = "#c17f2e";
 
 interface MapProps {
   routes: FeatureCollection<LineString>;
@@ -72,22 +72,23 @@ export default function Map({ routes, freshnessPoints }: MapProps) {
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
           "line-color": BASE_COLOR,
-          "line-width": 2.5,
+          "line-width": 1.5,
           "line-opacity": 0.5,
         },
       });
 
       // Freshness circles laid over the line: color fades from vivid
-      // green (cleaned today) back to the base color over FADE_DAYS days.
-      // Each cell holds the most recent cleanup that covered it, so a
-      // street re-cleaned today looks freshly green even if it was also
-      // cleaned weeks ago.
+      // moss (cleaned today) back to the amber base color over FADE_DAYS
+      // days. Each cell holds the most recent cleanup that covered it, so
+      // a street re-cleaned today looks freshly green even if it was also
+      // cleaned weeks ago. Kept tight to the line width so it hugs the
+      // road instead of ballooning over it.
       map.addLayer({
         id: "community-freshness-circles",
         type: "circle",
         source: "community-freshness",
         paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 10],
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 2, 17, 5],
           "circle-color": [
             "interpolate",
             ["linear"],
@@ -102,7 +103,7 @@ export default function Map({ routes, freshnessPoints }: MapProps) {
             0, 0.95,
             FADE_DAYS, 0.5,
           ],
-          "circle-blur": 0.3,
+          "circle-blur": 0.15,
         },
       });
     });

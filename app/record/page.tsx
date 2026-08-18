@@ -11,7 +11,7 @@ export default function RecordPage() {
         >
           ← Map
         </Link>
-        <h1 className="rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-semibold shadow-lg shadow-black/5 backdrop-blur-md">
+        <h1 className="rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 font-[family-name:var(--font-display)] text-sm font-semibold shadow-lg shadow-black/5 backdrop-blur-md">
           Record a cleanup
         </h1>
       </header>

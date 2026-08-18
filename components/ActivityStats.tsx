@@ -38,7 +38,9 @@ function Stat({ label, value }: { label: string; value: string }) {
       <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
         {label}
       </span>
-      <span className="text-2xl font-semibold tabular-nums tracking-tight">{value}</span>
+      <span className="font-[family-name:var(--font-display)] text-2xl font-semibold tabular-nums tracking-tight">
+        {value}
+      </span>
     </div>
   );
 }
