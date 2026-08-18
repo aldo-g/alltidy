@@ -42,7 +42,9 @@ export default async function Home() {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-white">
             A
           </span>
-          <h1 className="text-[15px] font-semibold tracking-tight">AllTidy</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-[16px] font-semibold tracking-tight">
+            AllTidy
+          </h1>
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           <Link
@@ -60,8 +62,10 @@ export default async function Home() {
       {weeklyMeters > 0 && (
         <div className="pointer-events-none absolute bottom-24 right-4 z-10">
           <div className="pointer-events-auto rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/80 px-4 py-2 text-sm font-medium shadow-lg shadow-black/5 backdrop-blur-md">
-            <span className="tabular-nums">{formatDistance(weeklyMeters)}</span> of streets
-            cleaned this week
+            <span className="font-[family-name:var(--font-display)] tabular-nums font-semibold">
+              {formatDistance(weeklyMeters)}
+            </span>{" "}
+            of streets cleaned this week
           </div>
         </div>
       )}

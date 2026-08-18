@@ -56,9 +56,9 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
         source: "live-route",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "#2563eb",
-          "line-width": 14,
-          "line-opacity": 0.25,
+          "line-color": "#4d6b4f",
+          "line-width": 10,
+          "line-opacity": 0.2,
           "line-blur": 3,
         },
       });
@@ -69,8 +69,8 @@ export default function LiveTrackMap({ points }: LiveTrackMapProps) {
         source: "live-route",
         layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "line-color": "#2563eb",
-          "line-width": 5,
+          "line-color": "#4d6b4f",
+          "line-width": 3,
         },
       });
     });
