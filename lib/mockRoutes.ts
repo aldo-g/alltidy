@@ -14,7 +14,7 @@ const daysAgo = (n: number) => new Date(Date.now() - n * DAY_MS).toISOString();
 //
 // Scaling this up favors more distinct real streets over more repeat
 // passes on the same street: repeat passes on identical geometry collapse
-// into the same freshness grid cells (see routesToFreshnessPoints) and
+// into the same freshness grid cells (see routesToFreshnessSegments) and
 // don't add visual coverage, they just inflate the point count the map has
 // to render.
 // A handful of seed routes touch a canal, the IJ, or another water body at

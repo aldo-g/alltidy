@@ -1,4 +1,4 @@
-import type { Feature, FeatureCollection, LineString, Point } from "geojson";
+import type { Feature, FeatureCollection, LineString } from "geojson";
 import type { Activity, LngLat } from "@/lib/types";
 import { haversineDistance } from "@/lib/geo/distance";
 
@@ -31,39 +31,46 @@ const METERS_PER_DEGREE_LAT = 111_320;
 
 /**
  * For each patch of street, finds the most recent cleanup that covered it
- * and emits a point carrying "days since that cleanup" — freshly-cleaned
- * spots read as 0 (vivid green), fading back toward the uncleaned baseline
- * as the days climb. Older cleanups on the same spot don't matter once a
- * newer one exists: the map always shows how recently a street was
- * cleaned, not how many times it's been cleaned historically.
+ * and emits a short line segment carrying "days since that cleanup" —
+ * freshly-cleaned spots read as 0 (vivid green), fading back toward the
+ * uncleaned baseline as the days climb. Older cleanups on the same spot
+ * don't matter once a newer one exists: the map always shows how recently
+ * a street was cleaned, not how many times it's been cleaned historically.
+ *
+ * Segments (not points) so the freshness color renders as a continuous
+ * line at any zoom — sampled points left visible gaps between circle
+ * markers once zoomed in far enough that the marker radius no longer
+ * bridged the sample spacing.
  */
-export function routesToFreshnessPoints(
+export function routesToFreshnessSegments(
   activities: Pick<Activity, "route_points" | "created_at">[],
   now: number = Date.now()
-): FeatureCollection<Point> {
+): FeatureCollection<LineString> {
   const cellMostRecentMs = new Map<string, number>();
-  const cellCoordinate = new Map<string, LngLat>();
+  const cellSegment = new Map<string, [LngLat, LngLat]>();
 
   for (const activity of activities) {
     const activityMs = new Date(activity.created_at).getTime();
+    const densified = densifyLine(activity.route_points, SAMPLE_SPACING_M);
 
-    for (const point of densifyLine(activity.route_points, SAMPLE_SPACING_M)) {
-      const key = cellKey(point);
+    for (let i = 1; i < densified.length; i++) {
+      const segment: [LngLat, LngLat] = [densified[i - 1], densified[i]];
+      const key = cellKey(densified[i]);
       const existing = cellMostRecentMs.get(key);
       if (existing === undefined || activityMs > existing) {
         cellMostRecentMs.set(key, activityMs);
-        cellCoordinate.set(key, point);
+        cellSegment.set(key, segment);
       }
     }
   }
 
-  const features: Feature<Point>[] = [];
+  const features: Feature<LineString>[] = [];
   for (const [key, mostRecentMs] of cellMostRecentMs) {
-    const coordinate = cellCoordinate.get(key)!;
+    const segment = cellSegment.get(key)!;
     const daysAgo = Math.max(0, (now - mostRecentMs) / (24 * 60 * 60 * 1000));
     features.push({
       type: "Feature",
-      geometry: { type: "Point", coordinates: coordinate },
+      geometry: { type: "LineString", coordinates: segment },
       properties: { daysAgo },
     });
   }

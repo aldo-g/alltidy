@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { FeatureCollection, LineString, Point } from "geojson";
+import type { FeatureCollection, LineString } from "geojson";
 import { applyMonochromeStyle } from "@/lib/mapStyle";
 
 const AMSTERDAM_CENTER: [number, number] = [4.9041, 52.3676];
@@ -17,10 +17,10 @@ const BASE_COLOR = "#d99a3d";
 
 interface MapProps {
   routes: FeatureCollection<LineString>;
-  freshnessPoints: FeatureCollection<Point>;
+  freshnessSegments: FeatureCollection<LineString>;
 }
 
-export default function Map({ routes, freshnessPoints }: MapProps) {
+export default function Map({ routes, freshnessSegments }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [unsupported, setUnsupported] = useState(() => !mapboxgl.supported());
@@ -60,7 +60,7 @@ export default function Map({ routes, freshnessPoints }: MapProps) {
 
       map.addSource("community-freshness", {
         type: "geojson",
-        data: freshnessPoints,
+        data: freshnessSegments,
       });
 
       // Thin base line so every cleaned street is visible as a continuous
@@ -80,34 +80,35 @@ export default function Map({ routes, freshnessPoints }: MapProps) {
         },
       });
 
-      // Freshness circles laid over the line: color fades from vivid
+      // Freshness segments laid over the base line: color fades from vivid
       // green (cleaned today) back to the base color over FADE_DAYS days.
       // Each cell holds the most recent cleanup that covered it, so a
       // street re-cleaned today looks freshly green even if it was also
-      // cleaned weeks ago. Sized to match the line width (not wider) so
-      // the fade reads as the road itself changing color, not a smear
-      // drawn on top of it.
+      // cleaned weeks ago. Drawn as short line strokes (not point circles)
+      // so the fade reads as a continuous line at any zoom instead of
+      // gapped dots — matches the base line's width so it overlays the
+      // road, not a smear drawn on top of it.
       map.addLayer({
-        id: "community-freshness-circles",
-        type: "circle",
+        id: "community-freshness-line",
+        type: "line",
         source: "community-freshness",
+        layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 1.5, 17, 3.5],
-          "circle-color": [
+          "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1.5, 17, 3.5],
+          "line-color": [
             "interpolate",
             ["linear"],
             ["get", "daysAgo"],
             0, FRESH_COLOR,
             FADE_DAYS, BASE_COLOR,
           ],
-          "circle-opacity": [
+          "line-opacity": [
             "interpolate",
             ["linear"],
             ["get", "daysAgo"],
             0, 0.95,
             FADE_DAYS, 0.6,
           ],
-          "circle-blur": 0.1,
         },
       });
     });
@@ -129,8 +130,8 @@ export default function Map({ routes, freshnessPoints }: MapProps) {
     const freshnessSource = map.getSource("community-freshness") as
       | mapboxgl.GeoJSONSource
       | undefined;
-    freshnessSource?.setData(freshnessPoints);
-  }, [routes, freshnessPoints]);
+    freshnessSource?.setData(freshnessSegments);
+  }, [routes, freshnessSegments]);
 
   if (unsupported) {
     return (
