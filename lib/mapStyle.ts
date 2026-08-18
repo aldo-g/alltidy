@@ -21,26 +21,26 @@ export function applyMonochromeStyle(map: mapboxgl.Map) {
 
     if (layer.type === "fill") {
       if (/water/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#e3ddc9");
+        map.setPaintProperty(id, "fill-color", "#dce3dc");
       } else if (/building/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#efe9db");
+        map.setPaintProperty(id, "fill-color", "#ece8dc");
       } else if (/landuse|land|park|park-national/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#f2ecdd");
+        map.setPaintProperty(id, "fill-color", "#f0ecdf");
       } else if (/background/.test(id)) {
-        map.setPaintProperty(id, "fill-color", "#f6f0e2");
+        map.setPaintProperty(id, "fill-color", "#f6f4ee");
       }
     }
 
     // Roads and paths are the secondary highlight beneath the recorded
     // routes — darker than the rest of the basemap for clear structure,
-    // but with enough separation from the route colors that cleanups
+    // but with enough separation from the route green that cleanups
     // still read as the dominant color on the map.
     if (layer.type === "line" && /road|bridge|tunnel/.test(id)) {
-      map.setPaintProperty(id, "line-color", "#a89a7c");
+      map.setPaintProperty(id, "line-color", "#a39d87");
     }
 
     if (layer.type === "background") {
-      map.setPaintProperty(id, "background-color", "#f6f0e2");
+      map.setPaintProperty(id, "background-color", "#f6f4ee");
     }
   }
 }

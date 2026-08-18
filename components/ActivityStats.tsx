@@ -25,20 +25,21 @@ export default function ActivityStats({ points, startedAt, isRecording }: Activi
     : 0;
 
   return (
-    <div className="flex gap-8 rounded-2xl border border-[var(--border)]/60 bg-[var(--surface)]/85 px-6 py-4 shadow-lg shadow-black/5 backdrop-blur-md">
-      <Stat label="Duration" value={formatDuration(durationSeconds)} />
+    <div className="glass-panel flex gap-8 rounded-2xl px-6 py-4">
+      <Stat label="Duration" value={formatDuration(durationSeconds)} live={isRecording} />
       <Stat label="Distance" value={formatDistance(distanceMeters)} />
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, live }: { label: string; value: string; live?: boolean }) {
   return (
     <div className="flex flex-col items-center">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
+      <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
+        {live && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--danger)]" />}
         {label}
       </span>
-      <span className="font-[family-name:var(--font-display)] text-2xl font-semibold tabular-nums tracking-tight">
+      <span className="font-display text-2xl font-semibold tabular-nums tracking-tight">
         {value}
       </span>
     </div>
