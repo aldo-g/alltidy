@@ -3,7 +3,7 @@ import Map from "@/components/Map";
 import AuthButton from "@/components/AuthButton";
 import PersonalStats from "@/components/PersonalStats";
 import { createClient } from "@/lib/supabase/server";
-import { routesToFeatureCollection, routesToFreshnessPoints } from "@/lib/geo/geojson";
+import { routesToFeatureCollection, routesToFreshnessSegments } from "@/lib/geo/geojson";
 import { MOCK_ROUTES } from "@/lib/mockRoutes";
 
 export default async function Home() {
@@ -19,7 +19,7 @@ export default async function Home() {
 
   const routes = error || !data || data.length === 0 ? MOCK_ROUTES : data;
   const routeCollection = routesToFeatureCollection(routes);
-  const freshnessPoints = routesToFreshnessPoints(routes);
+  const freshnessSegments = routesToFreshnessSegments(routes);
   const weeklyMeters = sumMetersSinceLastWeek(data ?? []);
 
   const user = userData.user;
@@ -35,7 +35,7 @@ export default async function Home() {
 
   return (
     <div className="relative h-screen w-screen">
-      <Map routes={routeCollection} freshnessPoints={freshnessPoints} />
+      <Map routes={routeCollection} freshnessSegments={freshnessSegments} />
 
       <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4">
         <div className="glass-panel pointer-events-auto flex items-center gap-2.5 rounded-full py-2 pl-3 pr-4">
