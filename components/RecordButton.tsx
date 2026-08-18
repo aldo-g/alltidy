@@ -66,12 +66,13 @@ export default function RecordButton() {
 
   if (status === "idle" || status === "requesting-permission") {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-[var(--surface-muted)] p-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 bg-[var(--surface-muted)] p-6">
         <button
           onClick={start}
           disabled={status === "requesting-permission"}
-          className="flex h-40 w-40 items-center justify-center rounded-full bg-[var(--accent)] text-lg font-semibold text-white shadow-xl shadow-emerald-900/25 transition-all hover:bg-[var(--accent-hover)] hover:scale-[1.03] disabled:scale-100 disabled:opacity-60"
+          className="font-display group relative flex h-44 w-44 items-center justify-center rounded-full bg-[var(--accent)] text-lg font-semibold text-white shadow-2xl shadow-[var(--accent)]/30 transition-all hover:bg-[var(--accent-hover)] hover:scale-[1.03] hover:shadow-[var(--accent)]/40 active:scale-[0.98] disabled:scale-100 disabled:opacity-60"
         >
+          <span className="absolute inset-0 rounded-full border border-white/20" />
           {status === "requesting-permission" ? "Locating…" : "Start Cleanup"}
         </button>
         <p className="text-sm text-[var(--muted)]">
@@ -100,7 +101,7 @@ export default function RecordButton() {
             <StatusMessage>{saveError}</StatusMessage>
           </div>
         )}
-        <div className="flex items-center gap-4 rounded-full border border-[var(--border)]/60 bg-[var(--surface)]/85 p-2 shadow-xl shadow-black/10 backdrop-blur-md">
+        <div className="glass-panel flex items-center gap-4 rounded-full p-2">
           {isRecording ? (
             <button
               onClick={stop}
@@ -121,7 +122,7 @@ export default function RecordButton() {
               <button
                 onClick={handleSave}
                 disabled={saving || points.length < 2}
-                className="rounded-full bg-[var(--accent)] px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-900/20 transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="rounded-full bg-[var(--accent)] px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-[var(--accent)]/25 transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-60"
               >
                 {saving ? "Saving…" : "Save Cleanup"}
               </button>
@@ -135,7 +136,7 @@ export default function RecordButton() {
 
 function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
-    <p className="max-w-sm rounded-xl border border-[var(--border)]/60 bg-[var(--warn-bg)] px-4 py-3 text-center text-sm text-[var(--warn-fg)] shadow-lg shadow-black/5">
+    <p className="max-w-sm rounded-xl border border-[var(--border)] bg-[var(--warn-bg)] px-4 py-3 text-center text-sm text-[var(--warn-fg)] shadow-lg shadow-black/5">
       {children}
     </p>
   );
