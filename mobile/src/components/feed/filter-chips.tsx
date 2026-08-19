@@ -1,20 +1,23 @@
-import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, radii, spacing } from "@/lib/theme/tokens";
 
-const FILTERS = ["Nearby", "Following", "Events"] as const;
+export const FEED_FILTERS = ["Nearby", "Following", "Events"] as const;
+export type FeedFilter = (typeof FEED_FILTERS)[number];
 
-export function FilterChips() {
-  const [active, setActive] = useState<(typeof FILTERS)[number]>("Nearby");
+type Props = {
+  active: FeedFilter;
+  onChange: (filter: FeedFilter) => void;
+};
 
+export function FilterChips({ active, onChange }: Props) {
   return (
     <View style={styles.row}>
-      {FILTERS.map((filter) => {
+      {FEED_FILTERS.map((filter) => {
         const isActive = filter === active;
         return (
           <Pressable
             key={filter}
-            onPress={() => setActive(filter)}
+            onPress={() => onChange(filter)}
             style={[styles.chip, isActive ? styles.chipActive : styles.chipInactive]}
           >
             <Text style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}>
