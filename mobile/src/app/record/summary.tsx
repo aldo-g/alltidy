@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { StatGrid } from "@/components/stats/stat-grid";
 import { StreetChip } from "@/components/stats/street-chip";
 import { useRecordSession } from "@/lib/hooks/record-session-context";
-import { addPostedActivity } from "@/lib/hooks/usePostedActivities";
+import { insertActivity } from "@/lib/supabase/activities";
+import { getDeviceId } from "@/lib/deviceId";
 import { countNewStreets } from "@/lib/geo/newStreets";
 import { colors, spacing } from "@/lib/theme/tokens";
 import { typography } from "@/lib/theme/typography";
@@ -21,6 +22,8 @@ const SAMPLE_NEW_STREET_NAMES = [
 export default function RecordSummaryScreen() {
   const session = useRecordSession();
   const mapRef = useRef<MapView>(null);
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
   const coordinates = session.points.map(([longitude, latitude]) => ({ latitude, longitude }));
   const newStreets = useMemo(() => countNewStreets(session.points), [session.points]);
@@ -38,15 +41,31 @@ export default function RecordSummaryScreen() {
     router.replace("/(tabs)");
   };
 
-  const handlePost = () => {
-    addPostedActivity({
-      id: `local-${Date.now()}`,
-      route_points: session.points,
-      created_at: session.startedAt ?? new Date().toISOString(),
-      distance_meters: session.distanceMeters,
-    });
-    session.reset();
-    router.replace("/(tabs)");
+  const handlePost = async () => {
+    if (posting || session.points.length < 2) return;
+    setPosting(true);
+    setPostError(null);
+
+    const startedAt = session.startedAt ?? new Date().toISOString();
+    const endedAt = new Date().toISOString();
+
+    try {
+      const deviceId = await getDeviceId();
+      await insertActivity({
+        started_at: startedAt,
+        ended_at: endedAt,
+        duration_seconds: Math.max(1, session.elapsedSeconds),
+        route_points: session.points,
+        distance_meters: session.distanceMeters,
+        device_id: deviceId,
+      });
+      session.reset();
+      router.replace("/(tabs)");
+    } catch (err) {
+      setPostError(err instanceof Error ? err.message : "Failed to post your cleanup.");
+    } finally {
+      setPosting(false);
+    }
   };
 
   return (
@@ -107,12 +126,14 @@ export default function RecordSummaryScreen() {
             </View>
           </View>
 
+          {postError && <Text style={styles.errorText}>{postError}</Text>}
+
           <View style={styles.actionsRow}>
-            <Button variant="ghost" onPress={handleDiscard} style={{ flex: 0 }}>
+            <Button variant="ghost" onPress={handleDiscard} disabled={posting} style={{ flex: 0 }}>
               Discard
             </Button>
-            <Button onPress={handlePost} style={{ flex: 1 }}>
-              Post to the map
+            <Button onPress={handlePost} disabled={posting} style={{ flex: 1 }}>
+              {posting ? "Posting…" : "Post to the map"}
             </Button>
           </View>
         </View>
@@ -167,5 +188,10 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: "row",
     gap: spacing.md,
+  },
+  errorText: {
+    fontFamily: "Figtree_500Medium",
+    fontSize: 13,
+    color: colors.accentActive,
   },
 });

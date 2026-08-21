@@ -9,18 +9,18 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { Button } from "@/components/ui/button";
 import { MOCK_ROUTES } from "@/lib/mock/mockRoutes";
 import { MOCK_AREAS, DEFAULT_AREA_ID } from "@/lib/mock/mockAreas";
-import { usePostedActivities } from "@/lib/hooks/usePostedActivities";
+import { useActivities } from "@/lib/hooks/useActivities";
 import { colors, radii, spacing } from "@/lib/theme/tokens";
 import { typography } from "@/lib/theme/typography";
 
 export default function MapScreen() {
   const area = MOCK_AREAS[DEFAULT_AREA_ID];
-  const posted = usePostedActivities();
+  const { activities: posted } = useActivities();
+  // Falls back to MOCK_ROUTES when Supabase has no real cleanups yet, same
+  // as the web app's app/page.tsx — keeps the map busy during local dev
+  // and early testing instead of showing an empty canvas.
   const activities = useMemo(
-    () => [
-      ...posted.map((p) => ({ route_points: p.route_points, created_at: p.created_at })),
-      ...MOCK_ROUTES.map((r) => ({ route_points: r.route_points, created_at: r.created_at })),
-    ],
+    () => (posted.length > 0 ? posted : MOCK_ROUTES),
     [posted]
   );
 
@@ -30,7 +30,7 @@ export default function MapScreen() {
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
         <View style={styles.topRow}>
-          <AreaPill areaName="Amsterdam" streetsTracked={MOCK_ROUTES.length + posted.length} />
+          <AreaPill areaName="Amsterdam" streetsTracked={activities.length} />
           <FreshnessLegendChip />
         </View>
 
