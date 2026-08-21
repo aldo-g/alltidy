@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { FreshnessMap } from "@/components/map/freshness-map";
 import { AreaPill } from "@/components/map/area-pill";
 import { FreshnessLegendChip } from "@/components/map/freshness-legend-chip";
@@ -13,8 +13,15 @@ import { useActivities } from "@/lib/hooks/useActivities";
 import { colors, radii, spacing } from "@/lib/theme/tokens";
 import { typography } from "@/lib/theme/typography";
 
+// Tab bar content height set in (tabs)/_layout.tsx (paddingTop 14 +
+// paddingBottom 14 + icon/label ~52 + the CleanButton stack) — the
+// navigator itself sits below the safe area, so its true on-screen height
+// is this plus the device's bottom inset, added via useSafeAreaInsets below.
+const TAB_BAR_HEIGHT = 94;
+
 export default function MapScreen() {
   const area = MOCK_AREAS[DEFAULT_AREA_ID];
+  const insets = useSafeAreaInsets();
   const { activities: posted } = useActivities();
   // Falls back to MOCK_ROUTES when Supabase has no real cleanups yet, same
   // as the web app's app/page.tsx — keeps the map busy during local dev
@@ -28,13 +35,13 @@ export default function MapScreen() {
     <View style={styles.container}>
       <FreshnessMap activities={activities} />
 
-      <SafeAreaView style={styles.overlay} pointerEvents="box-none">
+      <SafeAreaView style={styles.overlay} pointerEvents="box-none" edges={["top"]}>
         <View style={styles.topRow}>
           <AreaPill areaName="Amsterdam" streetsTracked={activities.length} />
           <FreshnessLegendChip />
         </View>
 
-        <View style={styles.sheetWrap}>
+        <View style={[styles.sheetWrap, { bottom: TAB_BAR_HEIGHT + insets.bottom + spacing.sm }]}>
           <GlassPanel radius={radii.card} style={styles.sheet}>
             <View style={styles.sheetInner}>
               <View style={styles.sheetHandle} />
@@ -91,7 +98,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 130,
     paddingHorizontal: spacing.sm,
   },
   sheet: {},
