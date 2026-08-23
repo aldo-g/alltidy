@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAppFonts } from "@/lib/theme/fonts";
 import { colors } from "@/lib/theme/tokens";
@@ -31,15 +32,17 @@ export default function RootLayout() {
   if (!ready) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayout}>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="area/[id]" options={{ presentation: "card" }} />
-        <Stack.Screen name="record" options={{ presentation: "fullScreenModal" }} />
-        <Stack.Screen name="onboarding/index" />
-        <Stack.Screen name="challenges/index" options={{ presentation: "card" }} />
-      </Stack>
-    </View>
+    <SafeAreaProvider>
+      <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayout}>
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="area/[id]" options={{ presentation: "card" }} />
+          <Stack.Screen name="record" options={{ presentation: "fullScreenModal" }} />
+          <Stack.Screen name="onboarding/index" />
+          <Stack.Screen name="challenges/index" options={{ presentation: "card" }} />
+        </Stack>
+      </View>
+    </SafeAreaProvider>
   );
 }
